@@ -11,7 +11,7 @@ MIT License - Copyright (c) 2026 Greenisus1
 """
 import argparse, json, math, os, random, select, shutil, sys, termios, time, tty
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 RECORD = os.path.expanduser("~/.cranestack-best.json")
 
 START_SIZE = 2.6      # block footprint (x and z) on level 1
