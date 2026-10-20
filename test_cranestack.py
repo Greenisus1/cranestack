@@ -1,7 +1,7 @@
-import sys, tempfile, unittest
+import os, sys, tempfile, unittest
 from pathlib import Path
 from unittest.mock import patch
-sys.path.insert(0, '/tmp')
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import cranestack as a
 
 class StackTests(unittest.TestCase):
@@ -69,6 +69,15 @@ class StackTests(unittest.TestCase):
     def test_record(self):
         with tempfile.TemporaryDirectory() as d, patch.object(a, "RECORD", str(Path(d) / "b.json")):
             self.assertTrue(a.save(7)); a.save(2); self.assertEqual(a.best(), 7)
+
+class I18nTests(unittest.TestCase):
+    def test_defaults_present(self):
+        for k in ("MISSED", "PERFECT", "PERFECT_COMBO", "HUD"):
+            self.assertIn(k, a.DEFAULT_STRINGS)
+    def test_spanish_hud(self):
+        S = dict(a.DEFAULT_STRINGS)
+        S["HUD"] = "CRANESTACK  PUNTOS {score}  MEJOR {best}  N{level}  espacio soltar"
+        self.assertIn("PUNTOS 41", S["HUD"].format(score=41, best=50, level=3))
 
 class RenderTests(unittest.TestCase):
     def mk(self):
