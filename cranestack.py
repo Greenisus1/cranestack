@@ -14,6 +14,19 @@ import argparse, json, math, os, random, select, shutil, sys, termios, time, tty
 VERSION = "1.0.1"
 RECORD = os.path.expanduser("~/.cranestack-best.json")
 
+try:
+    import pi18n
+except ImportError:
+    pi18n = None
+
+# English UI strings; the Translations app owns every language via ~/pi-translations.
+DEFAULT_STRINGS = {
+    "MISSED": "MISSED! Space to retry",
+    "PERFECT_COMBO": "PERFECT x{combo}",
+    "PERFECT": "PERFECT!",
+    "HUD": "CRANESTACK  SCORE {score}  BEST {best}  L{level}  space drop  [] fov  f fps  p pause  q quit",
+}
+
 START_SIZE = 2.6      # block footprint (x and z) on level 1
 BLOCK_H = 0.5
 BASE_SPEED = 1.6      # sweep speed, grows per level
@@ -234,6 +247,7 @@ def main():
     fps_modes = [8, 12, 24, 30, 60]; fi = fps_modes.index(args.fps) if args.fps in fps_modes else 2
     pos, dirn = -SWEEP_RANGE, 1
     debris = []; flash = ""; flash_t = 0.0
+    S = pi18n.load("cranestack", DEFAULT_STRINGS) if pi18n else DEFAULT_STRINGS
     paused = False; done = False
     try:
         tty.setcbreak(fd)
@@ -260,7 +274,7 @@ def main():
                             debris.append([pos, t["cz"] if ax == "x" else t["cx"],
                                            t["sx"] if ax == "x" else size,
                                            t["sz"] if ax == "z" else size, st.top_y(), 0.0])
-                            flash = "MISSED! Space to retry"; flash_t = now
+                            flash = S["MISSED"]; flash_t = now
                         elif res == "ok":
                             t = st.blocks[-2]; ax = "x" if (st.level - 1) % 2 == 1 else "z"
                             size0 = t["sx"] if ax == "x" else t["sz"]
@@ -276,7 +290,7 @@ def main():
                                 else: debris.append([t["cx"], dcx, t["sx"], dsx, st.top_y() - BLOCK_H, 0.0])
                             flash = "sliced"; flash_t = now
                         else:
-                            flash = "PERFECT x%d" % st.combo if st.combo > 1 else "PERFECT!"; flash_t = now
+                            flash = S["PERFECT_COMBO"].format(combo=st.combo) if st.combo > 1 else S["PERFECT"]; flash_t = now
                         pos, dirn = -SWEEP_RANGE, 1
             if paused:
                 time.sleep(0.05); continue
@@ -298,8 +312,8 @@ def main():
             PH = min(Ht - 2, 60); W = min(W, 160)
             rw = W // 2 if fast else W
             rows = sc.render(st, rw, PH, moving, [tuple(d) for d in debris], now)
-            hud = "CRANESTACK  SCORE %d  BEST %d  L%d  space drop  [] fov  f fps  p pause  q quit   %s" % (
-                st.score, max(best(), st.score), st.level, flash if now - flash_t < 2.5 else "")
+            hud = S["HUD"].format(score=st.score, best=max(best(), st.score), level=st.level) + "   " + (
+                flash if now - flash_t < 2.5 else "")
             hud += "  [half-res]" if fast else ""
             tm.draw(rows, hud, fd, fast)
             fps = fps_modes[fi]
