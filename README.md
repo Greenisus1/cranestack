@@ -6,6 +6,10 @@ Original name, art, and code, in the spirit of timing-based stacking games. This
 
 Rendered in real 3D with an analytic ray tracer (truecolor half-block frames, delta writes, frame skip) - rainbow tower, sliced debris, camera that follows your tower up.
 
+## Languages
+
+Works with the Translations app: pick a language there and the HUD and flash messages switch to it (English, Espanol, Francais, Deutsch). With no Translations app installed it runs in English as usual.
+
 ## Run
 
 ```
